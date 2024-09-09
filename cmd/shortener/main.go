@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strings"
 	"sync"
 )
 
@@ -21,7 +22,7 @@ type urlStore struct {
 	mu   sync.Mutex
 }
 
-// Функция создания нового хранилища пар URL
+// Функция конструктор для создания нового хранилища пар URL
 func newURLStore() *urlStore {
 	return &urlStore{
 		urls: make(map[string]urlPair),
@@ -56,6 +57,11 @@ func handlePOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
 		return
 	}
+	originalURL := string(body)
+	if !strings.HasPrefix(originalURL, "http://") && !strings.HasPrefix(originalURL, "https://") {
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
 	defer r.Body.Close()
 	// Создаем новый короткий URL
 	shortURL, err := store.add(string(body))
@@ -66,17 +72,7 @@ func handlePOST(w http.ResponseWriter, r *http.Request) {
 	// Отправляем ответ с кодом 201 и коротким URL
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("content-type", "text/plain")
-
-	for key, values := range w.Header() {
-		fmt.Fprintf(w, "%s: ", key)
-		for _, value := range values {
-			fmt.Fprintf(w, "%s, ", value)
-		}
-		fmt.Fprintln(w)
-	}
-	fmt.Fprintf(w, "%d ", http.StatusCreated)
-	fmt.Fprintf(w, "%s\n", http.StatusText(http.StatusCreated))
-	fmt.Fprint(w, shortURL)
+	w.Write([]byte(shortURL))
 }
 
 // Метод добавления новой пары URL в хранилище
@@ -121,22 +117,9 @@ func handleGET(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Short URL not found", http.StatusBadRequest)
 		return
 	}
-	// Перенаправляем на оригинальный URL
-	http.Redirect(w, r, original, http.StatusTemporaryRedirect)
 	// Отправляем ответ с кодом 307 и оригинальным URL
-	w.Header().Set("content-type", "text/plain")
 	w.Header().Set("Location", original)
-
-	for key, values := range w.Header() {
-		fmt.Fprintf(w, "%s: ", key)
-		for _, value := range values {
-			fmt.Fprintf(w, "%s, ", value)
-		}
-		fmt.Fprintln(w)
-	}
-	fmt.Fprintf(w, "%d ", http.StatusTemporaryRedirect)
-	fmt.Fprintf(w, "%s\n", http.StatusText(http.StatusTemporaryRedirect))
-	fmt.Fprint(w, original)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 // Метод получения оригинального URL по короткому идентификатору
