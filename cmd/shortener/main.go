@@ -43,8 +43,6 @@ func webhook(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/* запрос для терминала командной строки: curl -v -X POST  "http://localhost:8080" -H "Content-Type: text/plain" -H "Host: localhost:8080" -d
-"https://practicum.yandex.ru/" */
 // Обработчик POST-запросов для создания нового короткого URL
 func handlePOST(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost || r.URL.Path != "/" {
@@ -146,3 +144,4 @@ func main() {
 	mux.HandleFunc("/", webhook)
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
+
