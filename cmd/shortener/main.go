@@ -66,7 +66,6 @@ func handlePOST(w http.ResponseWriter, r *http.Request) {
 	// Отправляем ответ с кодом 201 и коротким URL
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("content-type", "text/plain")
-	w.Header().Set("content-length", "30")
 
 	for key, values := range w.Header() {
 		fmt.Fprintf(w, "%s: ", key)
