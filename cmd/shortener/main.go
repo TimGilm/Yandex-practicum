@@ -43,6 +43,7 @@ func webhook(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// curl -X POST http://localhost:8080/ -H 'Content-Type: text/plain' -d 'https://practicum.yandex.ru/'
 // Обработчик POST-запросов для создания нового короткого URL
 func handlePOST(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost || r.URL.Path != "/" {
@@ -99,7 +100,7 @@ func generateShortID(length int) string {
 	return string(b)
 }
 
-/* запрос для терминала командной строки: curl -v GET "http://localhost:8080/YxL8Q2B1" -H 'Host: localhost:8080' -H 'Content-Type: text/plain' */
+/* запрос для терминала командной строки: curl -v GET http://localhost:8080/YxL8Q2B1 -H 'Host: localhost:8080' -H 'Content-Type: text/plain' */
 // Обработчик GET-запросов для перенаправления на оригинальный URL
 func handleGET(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet || len(r.URL.Path) <= 1 {
@@ -144,4 +145,3 @@ func main() {
 	mux.HandleFunc("/", webhook)
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
-
